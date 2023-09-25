@@ -1,5 +1,6 @@
 import pygame as pg
 from consts import *
+import graphics
 
 # инициализируем pygame
 pg.init()
@@ -18,7 +19,13 @@ while True:
     # TODO обработка
     # TODO отрисовка
 
-    # pg.display.flip()
+    screen.fill(GRAY)
+
+    test = graphics.MatrixSurface()
+    test.update()
+    screen.blit(test, (0, 0))
+
+    pg.display.flip()
 
     # залочили FPS
     clock.tick(FPS)
