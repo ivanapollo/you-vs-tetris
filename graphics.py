@@ -36,13 +36,13 @@ class MatrixSurface(pg.Surface):
                         0 <= self.m.fig_left + j < MATRIX_WIDTH):
                     continue
 
-                if self.m.fig.grid[i][j]:
-                    color = COLORS[self.m.fig.fig - 1]
-                    _rect = ((self.m.fig_left + j) * BLOCK_SIZE,
-                             (self.m.fig_top + i) * BLOCK_SIZE,
-                             BLOCK_SIZE,
-                             BLOCK_SIZE)
+                color = COLORS[self.m.fig.fig - 1] \
+                    if self.m.fig.grid[i][j] else COLORS[0]
+                _rect = ((self.m.fig_left + j) * BLOCK_SIZE,
+                         (self.m.fig_top + i) * BLOCK_SIZE,
+                         BLOCK_SIZE,
+                         BLOCK_SIZE)
 
-                    pg.draw.rect(self, color, _rect, border_radius=BORDER_RADIUS)
+                pg.draw.rect(self, color, _rect, border_radius=BORDER_RADIUS)
 
 

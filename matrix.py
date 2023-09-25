@@ -228,8 +228,8 @@ class Matrix:
             return True
 
         # if self.fig_top != MATRIX_HEIGHT - self.fig.height:
-        self.fig_top -= dy
-        self.fig_left -= dx
+        # self.fig_top -= dy
+        # self.fig_left -= dx
         return False
 
     def rotate(self):
@@ -243,8 +243,9 @@ class Matrix:
                 if not (0 <= self.fig_top + i < MATRIX_HEIGHT and
                         0 <= self.fig_left + j < MATRIX_WIDTH):
                     continue
-                if self.fig.grid[i][j]:
-                    self.grid[self.fig_top + i][self.fig_left + j] = self.fig.fig
+
+                self.grid[self.fig_top + i][self.fig_left + j] = self.fig.fig \
+                    if self.fig.grid[i][j] else 0
 
     def full_rows(self) -> tuple:
         """Возвращает кортеж из номеров заполненных рядов"""
@@ -261,3 +262,7 @@ class Matrix:
         for row in rows_to_shrink:
             self.grid.pop(-(self.height - row))
             self.grid.insert(0, [0] * self.width)
+
+    def print_matrix(self):
+        for i in range(self.height):
+            print(self.grid[i])

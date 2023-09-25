@@ -2,6 +2,7 @@ import pygame as pg
 from consts import *
 import graphics
 import matrix
+import os
 
 # инициализируем pygame
 pg.init()
@@ -35,5 +36,7 @@ while True:
 
     pg.display.flip()
 
+    playfield.m.print_matrix()
+    os.system('cls')
     # залочили FPS
-    clock.tick(FPS // 3)
+    clock.tick(3)
