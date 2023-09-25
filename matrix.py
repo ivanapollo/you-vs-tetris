@@ -1,6 +1,6 @@
 from consts import *
 import random
-
+import pygame.constants as pgc
 
 class Figure:
     # кортеж со всеми возможными фигурами и поворотами
@@ -120,7 +120,7 @@ class Figure:
     def __init__(self, fig: int, dir: int):
         self.fig: int = fig
         # где-то поворотов надо всего два, вот и разделяю по кейсам
-        self.dirs: int = len(self._figs[fig])
+        self.dirs: int = len(self._figs[fig - 1])
         self.dir: int = dir % self.dirs
 
         self.grid: tuple = ()
@@ -138,7 +138,7 @@ class Figure:
         self.__update()
 
     def __update(self):
-        self.grid = self._figs[self.fig][self.dir]
+        self.grid = self._figs[self.fig - 1][self.dir]
         self.height = len(self.grid)
         self.width = len(self.grid[0])
 
@@ -196,20 +196,21 @@ class Matrix:
                 if not (0 <= self.fig_top + i < MATRIX_HEIGHT and
                         0 <= self.fig_left + j < MATRIX_WIDTH):
                     continue
-                if self.grid[self.fig_top + i][self.fig_left + j] or \
-                        self.fig_top + i == MATRIX_HEIGHT:
+                if (self.grid[self.fig_top + i][self.fig_left + j] and
+                    self.fig.grid[i][j] or
+                    self.fig_top + i == MATRIX_HEIGHT):
                     return True
         return False
 
-    def move_fig(self, dir: int) -> bool:
+    def move_fig(self, dir: int, side=0) -> bool:
 
         dx = 0
         dy = 0
-        if dir == Dir.DOWN:
+        if side and dir == pgc.K_DOWN:
             dy = 1
-        elif dir == Dir.RIGHT:
+        if dir == pgc.K_RIGHT:
             dx = 1
-        elif dir == Dir.LEFT:
+        elif dir == pgc.K_LEFT:
             dx = -1
 
         if self.fig.fig == Fig.I:
@@ -226,9 +227,15 @@ class Matrix:
         if not self.check_collision():
             return True
 
+        # if self.fig_top != MATRIX_HEIGHT - self.fig.height:
         self.fig_top -= dy
         self.fig_left -= dx
         return False
+
+    def rotate(self):
+        self.fig.clockwise()
+        if self.check_collision():
+            self.fig.counterclockwise()
 
     def blit_fig(self):
         for i in range(self.fig.height):
@@ -236,8 +243,8 @@ class Matrix:
                 if not (0 <= self.fig_top + i < MATRIX_HEIGHT and
                         0 <= self.fig_left + j < MATRIX_WIDTH):
                     continue
-
-
+                if self.fig.grid[i][j]:
+                    self.grid[self.fig_top + i][self.fig_left + j] = self.fig.fig
 
     def full_rows(self) -> tuple:
         """Возвращает кортеж из номеров заполненных рядов"""
@@ -254,20 +261,3 @@ class Matrix:
         for row in rows_to_shrink:
             self.grid.pop(-(self.height - row))
             self.grid.insert(0, [0] * self.width)
-
-
-# f = Figure(Fig.I, Dir.UP)
-# print(f.width, f.height)
-# f.print()
-# f.rotate_clockwise()
-# print(f.width, f.height)
-# f.print()
-# m = Matrix(*MATRIX_SIZE)
-# print_matrix()
-# print(m.full_rows())
-# m.shrink_rows(m.full_rows())
-# print_matrix()
-
-# def print_matrix() -> None:
-#     for i in range(m.height):
-#         print(*m.grid[i], sep='')

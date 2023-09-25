@@ -14,14 +14,14 @@ class MatrixSurface(pg.Surface):
     def update(self):
         """Рисует ячейки"""
 
-        self.fill(GRAY)
+        self.fill(BG)
 
         for i in range(self.m.height):
             for j in range(self.m.width):
 
-                color = pg.Color('lightblue') \
+                color = COLORS[self.m.grid[i][j] - 1] \
                     if self.m.grid[i][j] \
-                    else GRAY
+                    else BG
 
                 _rect = (j * BLOCK_SIZE,
                          i * BLOCK_SIZE,
@@ -36,13 +36,13 @@ class MatrixSurface(pg.Surface):
                         0 <= self.m.fig_left + j < MATRIX_WIDTH):
                     continue
 
-                color = COLORS[self.m.fig.fig] \
-                    if self.m.fig.grid[i][j] \
-                    else GRAY
+                if self.m.fig.grid[i][j]:
+                    color = COLORS[self.m.fig.fig - 1]
+                    _rect = ((self.m.fig_left + j) * BLOCK_SIZE,
+                             (self.m.fig_top + i) * BLOCK_SIZE,
+                             BLOCK_SIZE,
+                             BLOCK_SIZE)
 
-                _rect = ((self.m.fig_left + j) * BLOCK_SIZE,
-                         (self.m.fig_top + i) * BLOCK_SIZE,
-                         BLOCK_SIZE,
-                         BLOCK_SIZE)
+                    pg.draw.rect(self, color, _rect, border_radius=BORDER_RADIUS)
 
-                pg.draw.rect(self, color, _rect, border_radius=BORDER_RADIUS)
+

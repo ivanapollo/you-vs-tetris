@@ -25,13 +25,13 @@ ALL_DIRS = (Dir.UP,
 
 
 class Fig(IntEnum):
-    O = 0
-    T = 1
-    LC = 2
-    RC = 3
-    Z = 4
-    S = 5
-    I = 6
+    O = 1
+    T = 2
+    LC = 3
+    RC = 4
+    Z = 5
+    S = 6
+    I = 7
 
 
 ALL_FIGS = (Fig.O,
@@ -42,7 +42,7 @@ ALL_FIGS = (Fig.O,
             Fig.S,
             Fig.I)
 
-GRAY = (40, 40, 40)
+BG = (40, 40, 40)
 
 COLORS = (
     Color('yellow'),

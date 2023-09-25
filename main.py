@@ -9,35 +9,31 @@ pg.init()
 screen = pg.display.set_mode(WINDOW_SIZE)
 clock = pg.time.Clock()
 
-test = graphics.MatrixSurface()
-test.m.fig = matrix.Figure(Fig.Z, Dir.UP)
+playfield = graphics.MatrixSurface()
 
 while True:
+    screen.fill(BG)
 
-    # TODO ввод от игрока
+    playfield.update()
+
     for i in pg.event.get():
         if i.type == pg.QUIT:
             pg.quit()
             exit()
         if i.type == pg.KEYDOWN:
             if i.key == pg.K_UP:
-                print(Dir.UP)
-            if i.key == pg.K_RIGHT:
-                print(Dir.RIGHT)
-            if i.key == pg.K_DOWN:
-                print(Dir.DOWN)
-            if i.key == pg.K_LEFT:
-                print(Dir.LEFT)
-    # TODO обработка
-    # TODO отрисовка
+                playfield.m.rotate()
+            playfield.m.move_fig(i.key)
 
-    screen.fill(GRAY)
+    if not playfield.m.move_fig(pg.K_DOWN, side=1):
+        playfield.m.blit_fig()
+        playfield.m.gen_new_fig()
 
-    test.update()
-    print(test.m.move_fig(Dir.DOWN))
-    screen.blit(test, (0, 0))
+    playfield.m.shrink_rows(playfield.m.full_rows())
+
+    screen.blit(playfield, (0, 0))
 
     pg.display.flip()
 
     # залочили FPS
-    clock.tick(3)
+    clock.tick(FPS // 3)
