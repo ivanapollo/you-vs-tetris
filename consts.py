@@ -1,11 +1,13 @@
 from enum import IntEnum
+from pygame import Color
 
 WINDOW_SIZE = (800, 600)
-MATRIX_SIZE = (10, 20)
-BLOCK_SIZE = 25
+MATRIX_WIDTH = 10
+MATRIX_HEIGHT = 20
+BLOCK_SIZE = 20
 BORDER_RADIUS = BLOCK_SIZE // 4
-MATRIX_SURF_SIZE = (MATRIX_SIZE[0] * BLOCK_SIZE,
-                    MATRIX_SIZE[1] * BLOCK_SIZE)
+MATRIX_SURF_SIZE = (MATRIX_WIDTH * BLOCK_SIZE,
+                    MATRIX_HEIGHT * BLOCK_SIZE)
 FPS = 30
 
 
@@ -14,6 +16,12 @@ class Dir(IntEnum):
     RIGHT = 1
     DOWN = 2
     LEFT = 3
+
+
+ALL_DIRS = (Dir.UP,
+            Dir.RIGHT,
+            Dir.DOWN,
+            Dir.LEFT)
 
 
 class Fig(IntEnum):
@@ -26,5 +34,22 @@ class Fig(IntEnum):
     I = 6
 
 
+ALL_FIGS = (Fig.O,
+            Fig.T,
+            Fig.LC,
+            Fig.RC,
+            Fig.Z,
+            Fig.S,
+            Fig.I)
+
 GRAY = (40, 40, 40)
-# TODO перечисление цветов?
+
+COLORS = (
+    Color('yellow'),
+    Color('purple'),
+    Color('lightblue'),
+    Color('orange'),
+    Color('red'),
+    Color('green'),
+    Color('cyan'),
+)

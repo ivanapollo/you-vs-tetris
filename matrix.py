@@ -1,12 +1,8 @@
 from consts import *
-
-# def print_matrix() -> None:
-#     for i in range(m.height):
-#         print(*m.grid[i], sep='')
+import random
 
 
 class Figure:
-
     # кортеж со всеми возможными фигурами и поворотами
     _figs = (
         # О
@@ -117,33 +113,40 @@ class Figure:
             ),
             (
                 (1, 1, 1, 1),
-                (0, 0, 0, 0),
             ),
         )
     )
 
-    def __init__(self, type: int, dir: int):
-        self.type = type
+    def __init__(self, fig: int, dir: int):
+        self.fig: int = fig
         # где-то поворотов надо всего два, вот и разделяю по кейсам
-        self.dirs = len(self._figs[type])
-        self.dir = dir % self.dirs
-        self.grid = ()
+        self.dirs: int = len(self._figs[fig])
+        self.dir: int = dir % self.dirs
+
+        self.grid: tuple = ()
+        self.height: int = 0
+        self.width: int = 0
+
         self.__update()
 
-    def rotate_clockwise(self):
+    def clockwise(self):
         self.dir = (self.dir + 1) % self.dirs
         self.__update()
 
+    def counterclockwise(self):
+        self.dir = (self.dir - 1) % self.dirs
+        self.__update()
+
     def __update(self):
-        self.grid = self._figs[self.type][self.dir]
+        self.grid = self._figs[self.fig][self.dir]
         self.height = len(self.grid)
         self.width = len(self.grid[0])
 
     # дебаг 90 lvl
-    # def print_fig(self):
-    #     for i in range(self.height):
-    #         print(self.grid[i])
-    #
+    def print(self):
+        for i in range(self.height):
+            print(self.grid[i])
+
     # def __print_figs(self):
     #     for i in range(len(self._figs)):
     #         for j in range(len(self._figs[i])):
@@ -158,8 +161,83 @@ class Matrix:
         self.width: int = width
         self.height: int = height
         self.grid: list = [
-            [1 for j in range(width)] for i in range(height)
+            [0 for j in range(width)] for i in range(height)
         ]
+
+        self.fig = None
+        self.fig_left: int = 0
+        self.fig_top: int = 0
+
+        self.gen_new_fig()
+
+    def gen_new_fig(self) -> bool:
+        """True, если сгенерировали фигуру, иначе False"""
+
+        self.fig = Figure(
+            random.choice(ALL_FIGS),
+            random.choice(ALL_DIRS),
+        )
+        self.fig_top = 0
+        self.fig_left = 0
+        for i in range(self.width):
+            if not self.check_collision():
+                return True
+            self.fig_left += 1
+        return False
+
+    def check_collision(self) -> bool:
+        """
+        True, если падающая фигура накладывается на ячейки сетки,
+        иначе False
+        """
+
+        for i in range(self.fig.height):
+            for j in range(self.fig.width):
+                if not (0 <= self.fig_top + i < MATRIX_HEIGHT and
+                        0 <= self.fig_left + j < MATRIX_WIDTH):
+                    continue
+                if self.grid[self.fig_top + i][self.fig_left + j] or \
+                        self.fig_top + i == MATRIX_HEIGHT:
+                    return True
+        return False
+
+    def move_fig(self, dir: int) -> bool:
+
+        dx = 0
+        dy = 0
+        if dir == Dir.DOWN:
+            dy = 1
+        elif dir == Dir.RIGHT:
+            dx = 1
+        elif dir == Dir.LEFT:
+            dx = -1
+
+        if self.fig.fig == Fig.I:
+            if not (-1 <= self.fig_left + dx <= MATRIX_WIDTH - self.fig.width and
+                    0 <= self.fig_top + dy <= MATRIX_HEIGHT - self.fig.height):
+                return False
+        else:
+            if not (0 <= self.fig_left + dx <= MATRIX_WIDTH - self.fig.width and
+                    0 <= self.fig_top + dy <= MATRIX_HEIGHT - self.fig.height):
+                return False
+
+        self.fig_top += dy
+        self.fig_left += dx
+        if not self.check_collision():
+            return True
+
+        self.fig_top -= dy
+        self.fig_left -= dx
+        return False
+
+    def blit_fig(self):
+        for i in range(self.fig.height):
+            for j in range(self.fig.width):
+                if not (0 <= self.fig_top + i < MATRIX_HEIGHT and
+                        0 <= self.fig_left + j < MATRIX_WIDTH):
+                    continue
+
+
 
     def full_rows(self) -> tuple:
         """Возвращает кортеж из номеров заполненных рядов"""
@@ -178,13 +256,18 @@ class Matrix:
             self.grid.insert(0, [0] * self.width)
 
 
-# f = Figure(Fig.Z, Dir.RIGHT)
-# f.print_fig()
+# f = Figure(Fig.I, Dir.UP)
+# print(f.width, f.height)
+# f.print()
 # f.rotate_clockwise()
-# f.print_fig()
-
+# print(f.width, f.height)
+# f.print()
 # m = Matrix(*MATRIX_SIZE)
 # print_matrix()
 # print(m.full_rows())
 # m.shrink_rows(m.full_rows())
 # print_matrix()
+
+# def print_matrix() -> None:
+#     for i in range(m.height):
+#         print(*m.grid[i], sep='')
