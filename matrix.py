@@ -1,8 +1,12 @@
 from consts import *
 import random
 import pygame.constants as pgc
+import itertools
+
 
 class Figure:
+    """Класс фигуры"""
+
     # кортеж со всеми возможными фигурами и поворотами
     _figs = (
         # О
@@ -127,7 +131,7 @@ class Figure:
         # направление фигуры
         self.dir: int = dir % self.dirs
 
-        # матрица стакана
+        # матрица фигуры
         self.grid: tuple = ()
 
         # высота, ширина
@@ -153,23 +157,25 @@ class Figure:
         self.height = len(self.grid)
         self.width = len(self.grid[0])
 
-    # дебаг 90 lvl
-    def print(self):
-        for i in range(self.height):
-            print(self.grid[i])
-
 
 class Matrix:
     """Класс игрового поля"""
 
     def __init__(self, width: int, height: int):
+
+        # ширина, высота стакана
         self.width: int = width
         self.height: int = height
+
+        # матрица стакана
         self.grid: list = [
             [0 for j in range(width)] for i in range(height)
         ]
 
+        # падающая фигура
         self.fig = None
+
+        # координаты левого верхнего угла фигуры
         self.fig_left: int = 0
         self.fig_top: int = 0
 
@@ -198,28 +204,30 @@ class Matrix:
         return False
 
     def check_collision(self) -> bool:
-        """
-        True, если падающая фигура накладывается на ячейки сетки,
-        иначе False
-        """
+        """True, если падающая фигура накладывается на ячейки сетки,
+        иначе False"""
 
-        for i in range(self.fig.height):
-            for j in range(self.fig.width):
-                # если ячейка не в пределах стакана, не проверяем
-                if not (0 <= self.fig_top + i < MATRIX_HEIGHT
-                        and 0 <= self.fig_left + j < MATRIX_WIDTH):
-                    continue
-                # проверяем, есть ли какие-то ячейки фигуры, пересекающиеся с ячейками стакана
-                if (self.grid[self.fig_top + i][self.fig_left + j]
-                        and self.fig.grid[i][j]
-                        or self.fig_top + i == MATRIX_HEIGHT):
-                    return True
+        # записал вложенный цикл через декартово произведение
+        for i, j in itertools.product(range(self.fig.height),
+                                      range(self.fig.width)):
+            # если ячейка не в пределах стакана, не проверяем
+            if not (0 <= self.fig_top + i < MATRIX_HEIGHT
+                    and 0 <= self.fig_left + j < MATRIX_WIDTH):
+                continue
+
+            # проверяем:
+            # 1) ячейка фигуры наложилась на ячейку в стакане
+            # 2) ячейка фигуры наткнулась на низ стакана
+            if (self.grid[self.fig_top + i][self.fig_left + j]
+                    and self.fig.grid[i][j]
+                    or self.fig_top + i == MATRIX_HEIGHT):
+                return True
+
         return False
 
     def move_fig(self, dir: int, side=0) -> bool:
-        """
-        True, если фигура переместилась, иначе False
-        """
+        """True, если фигура переместилась, иначе False"""
+
         dx = 0
         dy = 0
         if side and dir == pgc.K_DOWN:
@@ -229,17 +237,14 @@ class Matrix:
         elif dir == pgc.K_LEFT:
             dx = -1
 
+        # -1 потому что в вертикальной палке первый столбец пустой, поэтому сместиться влево ещё можно
+        # у нас слева есть пустой ряд, но по факту-то сместить её всё ещё можно
+        l_bound = -1 if self.fig.fig == Fig.I else 0
+
         # проверяем, чтобы фигура была в пределах стакана, иначе не двигаем
-        if self.fig.fig == Fig.I:
-            # -1 потому что в вертикальной палке первый столбец пустой, поэтому сместиться влево ещё можно
-            # у нас слева есть пустой ряд, но по факту-то сместить её всё ещё можно
-            if not (-1 <= self.fig_left + dx <= MATRIX_WIDTH - self.fig.width and
-                    0 <= self.fig_top + dy <= MATRIX_HEIGHT - self.fig.height):
-                return False
-        else:
-            if not (0 <= self.fig_left + dx <= MATRIX_WIDTH - self.fig.width and
-                    0 <= self.fig_top + dy <= MATRIX_HEIGHT - self.fig.height):
-                return False
+        if not (l_bound <= self.fig_left + dx <= MATRIX_WIDTH - self.fig.width
+                and 0 <= self.fig_top + dy <= MATRIX_HEIGHT - self.fig.height):
+            return False
 
         # пробуем сместиться
         self.fig_top += dy
@@ -252,6 +257,7 @@ class Matrix:
         # если наткнулись, значит сместимся обратно
         self.fig_top -= dy
         self.fig_left -= dx
+
         return False
 
     def rotate(self):
@@ -261,16 +267,16 @@ class Matrix:
 
     def blit_fig(self):
 
-        for i in range(self.fig.height):
-            for j in range(self.fig.width):
-                # если ячейка вне стакана, не рисуем
-                if not (0 <= self.fig_top + i < MATRIX_HEIGHT and
-                        0 <= self.fig_left + j < MATRIX_WIDTH):
-                    continue
+        for i, j in itertools.product(range(self.fig.height),
+                                      range(self.fig.width)):
+            # если ячейка вне стакана, не рисуем
+            if not (0 <= self.fig_top + i < MATRIX_HEIGHT and
+                    0 <= self.fig_left + j < MATRIX_WIDTH):
+                continue
 
-                # если ячейка фигуры не пустая, то записываем в матрицу
-                if self.fig.grid[i][j]:
-                    self.grid[self.fig_top + i][self.fig_left + j] = self.fig.fig
+            # если ячейка фигуры не пустая, то записываем в матрицу
+            if self.fig.grid[i][j]:
+                self.grid[self.fig_top + i][self.fig_left + j] = self.fig.fig
 
     def full_rows(self) -> tuple:
         """Возвращает кортеж из номеров заполненных рядов"""
