@@ -118,12 +118,19 @@ class Figure:
     )
 
     def __init__(self, fig: int, dir: int):
+        # тип фигуры
         self.fig: int = fig
+
         # где-то поворотов надо всего два, вот и разделяю по кейсам
         self.dirs: int = len(self._figs[fig - 1])
+
+        # направление фигуры
         self.dir: int = dir % self.dirs
 
+        # матрица стакана
         self.grid: tuple = ()
+
+        # высота, ширина
         self.height: int = 0
         self.width: int = 0
 
@@ -137,6 +144,10 @@ class Figure:
         self.dir = (self.dir - 1) % self.dirs
         self.__update()
 
+    def get_fig_color(self):
+        return COLORS[self.fig - 1]
+
+    # обновляем матрицу фигуры, её длину и высоту
     def __update(self):
         self.grid = self._figs[self.fig - 1][self.dir]
         self.height = len(self.grid)
@@ -146,12 +157,6 @@ class Figure:
     def print(self):
         for i in range(self.height):
             print(self.grid[i])
-
-    # def __print_figs(self):
-    #     for i in range(len(self._figs)):
-    #         for j in range(len(self._figs[i])):
-    #             for k in range(len(self._figs[i][j])):
-    #                 print(self._figs[i][j][k])
 
 
 class Matrix:
@@ -173,16 +178,23 @@ class Matrix:
     def gen_new_fig(self) -> bool:
         """True, если сгенерировали фигуру, иначе False"""
 
+        # рандомно выбрали фигуру
         self.fig = Figure(
             random.choice(ALL_FIGS),
             random.choice(ALL_DIRS),
         )
         self.fig_top = 0
         self.fig_left = 0
+
+        # смотрим, где есть пустое место, чтобы поставить фигуру
         for i in range(self.width):
+            # если ни с чем не пересекаемся, ставим фигуру
             if not self.check_collision():
                 return True
+            # если пересеклись, пробуем поставить её в соседнюю справа ячейку
             self.fig_left += 1
+
+        # если нигде не получилось, значит капут
         return False
 
     def check_collision(self) -> bool:
@@ -193,17 +205,21 @@ class Matrix:
 
         for i in range(self.fig.height):
             for j in range(self.fig.width):
-                if not (0 <= self.fig_top + i < MATRIX_HEIGHT and
-                        0 <= self.fig_left + j < MATRIX_WIDTH):
+                # если ячейка не в пределах стакана, не проверяем
+                if not (0 <= self.fig_top + i < MATRIX_HEIGHT
+                        and 0 <= self.fig_left + j < MATRIX_WIDTH):
                     continue
-                if (self.grid[self.fig_top + i][self.fig_left + j] and
-                    self.fig.grid[i][j] or
-                    self.fig_top + i == MATRIX_HEIGHT):
+                # проверяем, есть ли какие-то ячейки фигуры, пересекающиеся с ячейками стакана
+                if (self.grid[self.fig_top + i][self.fig_left + j]
+                        and self.fig.grid[i][j]
+                        or self.fig_top + i == MATRIX_HEIGHT):
                     return True
         return False
 
     def move_fig(self, dir: int, side=0) -> bool:
-
+        """
+        True, если фигура переместилась, иначе False
+        """
         dx = 0
         dy = 0
         if side and dir == pgc.K_DOWN:
@@ -213,7 +229,10 @@ class Matrix:
         elif dir == pgc.K_LEFT:
             dx = -1
 
+        # проверяем, чтобы фигура была в пределах стакана, иначе не двигаем
         if self.fig.fig == Fig.I:
+            # -1 потому что в вертикальной палке первый столбец пустой, поэтому сместиться влево ещё можно
+            # у нас слева есть пустой ряд, но по факту-то сместить её всё ещё можно
             if not (-1 <= self.fig_left + dx <= MATRIX_WIDTH - self.fig.width and
                     0 <= self.fig_top + dy <= MATRIX_HEIGHT - self.fig.height):
                 return False
@@ -222,14 +241,17 @@ class Matrix:
                     0 <= self.fig_top + dy <= MATRIX_HEIGHT - self.fig.height):
                 return False
 
+        # пробуем сместиться
         self.fig_top += dy
         self.fig_left += dx
+
+        # если ни на что не наткнулись, значит сместились
         if not self.check_collision():
             return True
 
-        # if self.fig_top != MATRIX_HEIGHT - self.fig.height:
-        # self.fig_top -= dy
-        # self.fig_left -= dx
+        # если наткнулись, значит сместимся обратно
+        self.fig_top -= dy
+        self.fig_left -= dx
         return False
 
     def rotate(self):
@@ -238,14 +260,17 @@ class Matrix:
             self.fig.counterclockwise()
 
     def blit_fig(self):
+
         for i in range(self.fig.height):
             for j in range(self.fig.width):
+                # если ячейка вне стакана, не рисуем
                 if not (0 <= self.fig_top + i < MATRIX_HEIGHT and
                         0 <= self.fig_left + j < MATRIX_WIDTH):
                     continue
 
-                self.grid[self.fig_top + i][self.fig_left + j] = self.fig.fig \
-                    if self.fig.grid[i][j] else 0
+                # если ячейка фигуры не пустая, то записываем в матрицу
+                if self.fig.grid[i][j]:
+                    self.grid[self.fig_top + i][self.fig_left + j] = self.fig.fig
 
     def full_rows(self) -> tuple:
         """Возвращает кортеж из номеров заполненных рядов"""
@@ -266,3 +291,6 @@ class Matrix:
     def print_matrix(self):
         for i in range(self.height):
             print(self.grid[i])
+
+    def get_block_color(self, i: int, j: int) -> int:
+        return COLORS[self.grid[i][j] - 1]

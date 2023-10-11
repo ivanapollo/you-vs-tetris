@@ -13,7 +13,7 @@ clock = pg.time.Clock()
 playfield = graphics.MatrixSurface()
 
 while True:
-    screen.fill(BG)
+    screen.fill(pg.Color('black'))
 
     playfield.update()
 
@@ -36,7 +36,5 @@ while True:
 
     pg.display.flip()
 
-    playfield.m.print_matrix()
-    os.system('cls')
     # залочили FPS
     clock.tick(3)
