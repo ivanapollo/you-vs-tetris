@@ -1,4 +1,7 @@
+import itertools
+
 import pygame as pg
+
 from consts import *
 import matrix
 
@@ -15,42 +18,35 @@ class MatrixSurface(pg.Surface):
         """Рисует ячейки"""
 
         # отрисовываем стакан
-        for i in range(self.m.height):
-            for j in range(self.m.width):
+        for i, j in itertools.product(range(self.m.height),
+                                      range(self.m.width)):
+            # если ячейка в стакане не пустая, отрисовываем цветом
+            # иначе фоновым
+            color = BG
+            if self.m.grid[i][j]:
+                color = self.m.get_block_color(i, j)
 
-                # если ячейка в стакане не пустая, отрисовываем цветом
-                # иначе фоновым
-                color = self.m.get_block_color(i, j) \
-                    if self.m.grid[i][j] \
-                    else BG
+            # прямоугольник для отрисовки
+            _rect = (j * BLOCK_SIZE, i * BLOCK_SIZE,
+                     BLOCK_SIZE, BLOCK_SIZE)
 
-                # прямоугольник для отрисовки
-                _rect = (j * BLOCK_SIZE,
-                         i * BLOCK_SIZE,
-                         BLOCK_SIZE,
-                         BLOCK_SIZE)
-
-                pg.draw.rect(self, color, _rect, border_radius=BORDER_RADIUS)
+            pg.draw.rect(self, color, _rect, border_radius=BORDER_RADIUS)
 
         # отрисовываем фигуру
-        for i in range(self.m.fig.height):
-            for j in range(self.m.fig.width):
-                if not (0 <= self.m.fig_top + i < MATRIX_HEIGHT and
-                        0 <= self.m.fig_left + j < MATRIX_WIDTH):
-                    continue
+        color = self.m.fig.get_fig_color()
+        for i, j in itertools.product(range(self.m.fig.height),
+                                      range(self.m.fig.width)):
+            if not (0 <= self.m.fig_top + i < MATRIX_HEIGHT
+                    and 0 <= self.m.fig_left + j < MATRIX_WIDTH):
+                continue
 
-                # если ячейка пустая, не отрисовываем
-                if not self.m.fig.grid[i][j]:
-                    continue
+            # если ячейка пустая, не отрисовываем
+            if not self.m.fig.grid[i][j]:
+                continue
 
-                # отрисовываем фигуру её цветом
-                color = self.m.fig.get_fig_color()
+            _rect = ((self.m.fig_left + j) * BLOCK_SIZE, (self.m.fig_top + i) * BLOCK_SIZE,
+                     BLOCK_SIZE, BLOCK_SIZE)
 
-                _rect = ((self.m.fig_left + j) * BLOCK_SIZE,
-                         (self.m.fig_top + i) * BLOCK_SIZE,
-                         BLOCK_SIZE,
-                         BLOCK_SIZE)
-
-                pg.draw.rect(self, color, _rect, border_radius=BORDER_RADIUS)
+            pg.draw.rect(self, color, _rect, border_radius=BORDER_RADIUS)
 
 

@@ -1,8 +1,6 @@
 import pygame as pg
 from consts import *
 import graphics
-import matrix
-import os
 
 # инициализируем pygame
 pg.init()
@@ -28,7 +26,8 @@ while True:
 
     if not playfield.m.move_fig(pg.K_DOWN, side=1):
         playfield.m.blit_fig()
-        playfield.m.gen_new_fig()
+        if not playfield.m.gen_new_fig():
+            break
 
     playfield.m.shrink_rows(playfield.m.full_rows())
 
@@ -37,4 +36,4 @@ while True:
     pg.display.flip()
 
     # залочили FPS
-    clock.tick(3)
+    clock.tick(FPS // 4)
