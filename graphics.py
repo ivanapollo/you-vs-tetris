@@ -12,6 +12,8 @@ class MatrixSurface(pg.Surface):
     def __init__(self):
         super().__init__((MATRIX_WIDTH * BLOCK_SIZE,
                           MATRIX_HEIGHT * BLOCK_SIZE))
+
+        # экземпляр игрового поля
         self.m = matrix.Matrix(MATRIX_WIDTH, MATRIX_HEIGHT)
 
     def update(self):
@@ -33,18 +35,18 @@ class MatrixSurface(pg.Surface):
             pg.draw.rect(self, color, _rect, border_radius=BORDER_RADIUS)
 
         # отрисовываем фигуру
-        color = self.m.fig.get_fig_color()
-        for i, j in itertools.product(range(self.m.fig.height),
-                                      range(self.m.fig.width)):
-            if not (0 <= self.m.fig_top + i < MATRIX_HEIGHT
-                    and 0 <= self.m.fig_left + j < MATRIX_WIDTH):
+        color = self.m.p_figure.get_fig_color()
+        for i, j in itertools.product(range(self.m.p_figure.height),
+                                      range(self.m.p_figure.width)):
+            if not (0 <= self.m.figure_top + i < MATRIX_HEIGHT
+                    and 0 <= self.m.figure_left + j < MATRIX_WIDTH):
                 continue
 
             # если ячейка пустая, не отрисовываем
-            if not self.m.fig.grid[i][j]:
+            if not self.m.p_figure.grid[i][j]:
                 continue
 
-            _rect = ((self.m.fig_left + j) * BLOCK_SIZE, (self.m.fig_top + i) * BLOCK_SIZE,
+            _rect = ((self.m.figure_left + j) * BLOCK_SIZE, (self.m.figure_top + i) * BLOCK_SIZE,
                      BLOCK_SIZE, BLOCK_SIZE)
 
             pg.draw.rect(self, color, _rect, border_radius=BORDER_RADIUS)
